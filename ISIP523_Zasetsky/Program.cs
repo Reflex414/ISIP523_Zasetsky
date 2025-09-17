@@ -109,7 +109,7 @@ class Program
         {
             Console.Write("Введите курс (1 рубль = ?): ");
             customRate = Convert.ToDecimal(Console.ReadLine());
-            Console.Write("Введите название валюты: ");
+            Console.Write("Введите название валютыы: ");
             currencyName = Console.ReadLine();
 
             for (int i = 0; i < n; i++)
