@@ -119,7 +119,25 @@ class Program
             }
         }
     }
+    static void SearchName(string[] names, decimal[] costs, int n)
+        {
+            Console.Write("Введите название для поиска: ");
+            string search = Console.ReadLine().ToLower();
 
+            Console.WriteLine("\nРезультаты поиска:");
+            bool found = false;
+            for (int i = 0; i < n; i++)
+            {
+                if (names[i].ToLower().Contains(search))
+                {
+                    Console.WriteLine($"{names[i]} - {costs[i]} руб.");
+                    found = true;
+                }
+            }
+            if (!found) Console.WriteLine("Не найдено!");
+            Console.WriteLine();
+        
+    }
     static void Main()
     {
         int n = 0;
@@ -144,45 +162,45 @@ class Program
         Console.WriteLine("Данные сохранены!\n");
 
 
-            while (true)
+        while (true)
+        {
+            Console.WriteLine("Меню:");
+            Console.WriteLine("1. Вывод данных");
+            Console.WriteLine("2. Статистика");
+            Console.WriteLine("3. Сортировка по цене");
+            Console.WriteLine("4. Конвертация валюты");
+            Console.WriteLine("5. Поиск по названию");
+            Console.WriteLine("0. Выход");
+            Console.Write("Выберите: ");
+
+            string choice = Console.ReadLine();
+            Console.WriteLine();
+
+            switch (choice)
             {
-                Console.WriteLine("Меню:");
-                Console.WriteLine("1. Вывод данных");
-                Console.WriteLine("2. Статистика");
-                Console.WriteLine("3. Сортировка по цене");
-                Console.WriteLine("4. Конвертация валюты");
-                Console.WriteLine("5. Поиск по названию");
-                Console.WriteLine("0. Выход");
-                Console.Write("Выберите: ");
-
-                string choice = Console.ReadLine();
-                Console.WriteLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        ShowData(names, costs, n);
-                        break;
-                    case "2":
-                        ShowStats(costs, n);
-                        break;
-                    case "3":
-                        SortCosts(names, costs, n); 
-                        ShowData(names, costs, n);
-                        break;
-                    case "4":
-                        ConvertCurrency(names, costs, n);
-                        break;
-                    case "5":
-                        SearchName();
-                        break;
-                    case "0":
-                        Console.WriteLine("Выход...");
-                        return;
-                    default:
-                        Console.WriteLine("Неверный выбор!\n");
-                        break;
-                }
+                case "1":
+                    ShowData(names, costs, n);
+                    break;
+                case "2":
+                    ShowStats(costs, n);
+                    break;
+                case "3":
+                    SortCosts(names, costs, n);
+                    ShowData(names, costs, n);
+                    break;
+                case "4":
+                    ConvertCurrency(names, costs, n);
+                    break;
+                case "5":
+                    SearchName(names, costs, n);
+                    break;
+                case "0":
+                    Console.WriteLine("Выход...");
+                    return;
+                default:
+                    Console.WriteLine("Неверный выбор!\n");
+                    break;
             }
         }
     }
+}
