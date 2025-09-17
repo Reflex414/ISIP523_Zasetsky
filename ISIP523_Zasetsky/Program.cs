@@ -14,6 +14,30 @@ using System;
 
 class Program
 {
+    static void ShowData(string[] names, decimal[] costs, int n)
+    {
+        Console.WriteLine("\nВаши операции:");
+        for (int i = 0; i < n; i++)
+            Console.WriteLine($"{names[i]} - {costs[i]} руб.");
+        Console.WriteLine();
+    }
+
+    static void ShowStats(decimal[] costs, int n)
+    {
+        decimal sum = 0, max = 0, min = decimal.MaxValue;
+        foreach (decimal cost in costs)
+        {
+            sum += cost;
+            if (cost > max)
+                max = cost;
+            if (cost < min)
+                min = cost;
+        }
+        Console.WriteLine($"\nСумма: {sum} руб.");
+        Console.WriteLine($"Среднее: {sum / n} руб.");
+        Console.WriteLine($"Макс: {max} руб.");
+        Console.WriteLine($"Мин: {min} руб.\n");
+    }
     static void Main()
     {
         int n = 0;
@@ -55,10 +79,10 @@ class Program
                 switch (choice)
                 {
                     case "1":
-                        ShowData();
+                        ShowData(names, costs, n);
                         break;
                     case "2":
-                        ShowStats();
+                        ShowStats(costs, n);
                         break;
                     case "3":
                         SortCosts(); 
