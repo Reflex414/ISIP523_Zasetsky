@@ -175,9 +175,127 @@ class Program
                     azbyka[lowerChar] = 1;
             }
         }
+        void SaveToHistory()
+        {
+
+            Characteristic historyCopy = new Characteristic();
+            historyCopy.text = this.text.Length > 30 ? this.text.Substring(0, 30) + "..." : this.text;
+            historyCopy.wordsCount = this.wordsCount;
+            historyCopy.shortestWord = this.shortestWord;
+            historyCopy.sentencesCount = this.sentencesCount;
+            historyCopy.consonant = this.consonant;
+            historyCopy.vowel = this.vowel;
+            historyCopy.longestWord = this.longestWord;
+            historyCopy.azbyka = new Dictionary<char, int>(this.azbyka);
+
+            textHistory.Add(historyCopy);
+        }
+
+        public void CalculateAllStats()
+        {
+            if (string.IsNullOrEmpty(text))
+                return;
+
+            WordCount();
+            ShortestWordSearch();
+            LongestWordSearch();
+            SentencesCount();
+            LettersQuantity();
+            StatsLetters();
+            SaveToHistory();
+        }
+
+        public void StatsOutput()
+        {
+            Console.WriteLine("\n=== СТАТИСТИКА ТЕКСТА ===");
+            Console.WriteLine($"Текст: {(text.Length > 50 ? text.Substring(0, 50) + "..." : text)}");
+            Console.WriteLine($"Общая длина текста: {text.Length} символов");
+            Console.WriteLine($"Количество слов: {wordsCount}");
+            Console.WriteLine($"Самое короткое слово: '{shortestWord}' (длина: {shortestWord.Length})");
+            Console.WriteLine($"Самое длинное слово: '{longestWord}' (длина: {longestWord.Length})");
+            Console.WriteLine($"Количество предложений: {sentencesCount}");
+            Console.WriteLine($"Количество согласных букв: {consonant}");
+            Console.WriteLine($"Количество гласных букв: {vowel}");
+            Console.WriteLine($"Всего букв: {consonant + vowel}");
 
 
-        
+            Console.WriteLine("\n--- Статистика букв ---");
+            if (azbyka.Count > 0)
+            {
+
+                List<KeyValuePair<char, int>> sortedList = new List<KeyValuePair<char, int>>();
+
+
+                foreach (KeyValuePair<char, int> pair in azbyka)
+                {
+                    sortedList.Add(pair);
+                }
+
+
+                for (int i = 0; i < sortedList.Count - 1; i++)
+                {
+                    for (int j = 0; j < sortedList.Count - i - 1; j++)
+                    {
+                        if (sortedList[j].Value < sortedList[j + 1].Value)
+                        {
+
+                            KeyValuePair<char, int> temp = sortedList[j];
+                            sortedList[j] = sortedList[j + 1];
+                            sortedList[j + 1] = temp;
+                        }
+                    }
+                }
+
+
+
+                foreach (KeyValuePair<char, int> pair in sortedList)
+                {
+                    Console.WriteLine($"  Буква '{pair.Key}': {pair.Value} раз");
+                }
+            }
+            else
+            {
+                Console.WriteLine("  Нет данных о буквах");
+            }
+            Console.WriteLine("=======================\n");
+        }
+
+
+        public static void ShowHistory()
+        {
+            if (textHistory.Count == 0)
+            {
+                Console.WriteLine("\nИстория пуста. Сначала проанализируйте тексты.");
+                return;
+            }
+
+            Console.WriteLine($"\n=== ИСТОРИЯ АНАЛИЗА ({textHistory.Count} текстов) ===");
+
+            for (int i = 0; i < textHistory.Count; i++)
+            {
+                Console.WriteLine($"\n--- Текст #{i + 1} ---");
+                Console.WriteLine($"Предпросмотр: {textHistory[i].text}");
+                Console.WriteLine($"Слов: {textHistory[i].wordsCount}");
+                Console.WriteLine($"Предложений: {textHistory[i].sentencesCount}");
+                Console.WriteLine($"Самое короткое слово: '{textHistory[i].shortestWord}'");
+                Console.WriteLine($"Самое длинное слово: '{textHistory[i].longestWord}'");
+                Console.WriteLine($"Букв: {textHistory[i].vowel + textHistory[i].consonant} (гл: {textHistory[i].vowel}, согл: {textHistory[i].consonant})");
+            }
+            Console.WriteLine("===================================\n");
+        }
+
+
+        public void ClearAllStats()
+        {
+            text = null;
+            wordsCount = 0;
+            shortestWord = "";
+            sentencesCount = 0;
+            consonant = 0;
+            vowel = 0;
+            longestWord = "";
+            azbyka.Clear();
+        }
     }
 
 }
