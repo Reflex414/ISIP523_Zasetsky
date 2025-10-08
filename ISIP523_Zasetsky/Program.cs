@@ -67,7 +67,77 @@ namespace StoreManagement
                 Console.WriteLine("Товар не найден");
             }
         }
+        public void OrderSupply(string code, int quantity)
+        {
+            var product = products.FirstOrDefault(p => p.Code == code);
+            if (product != null && quantity > 0)
+            {
+                product.Quantity += quantity;
+                Console.WriteLine($"Поставка: +{quantity}. Теперь: {product.Quantity}");
+            }
+            else
+            {
+                Console.WriteLine("Ошибка поставки");
+            }
+        }
 
+        public void SellProduct(string code, int quantity)
+        {
+            var product = products.FirstOrDefault(p => p.Code == code);
+            if (product == null)
+            {
+                Console.WriteLine("Товар не найден");
+                return;
+            }
+
+            if (product.Quantity >= quantity && quantity > 0)
+            {
+                product.Quantity -= quantity;
+                Console.WriteLine($"Продажа: -{quantity}. Остаток: {product.Quantity}");
+                Console.WriteLine($"Сумма: {product.Price * quantity:C}");
+            }
+            else
+            {
+                Console.WriteLine($"Недостаточно товара! В наличии: {product.Quantity}");
+            }
+        }
+
+        public void SearchByCode(string code)
+        {
+            var product = products.FirstOrDefault(p => p.Code == code);
+            if (product != null) product.PrintInfo();
+            else Console.WriteLine("Товар не найден");
+        }
+
+        public void SearchByName(string name)
+        {
+            var found = products.Where(p => p.Name.ToLower().Contains(name.ToLower())).ToList();
+            DisplaySearchResults(found, $"по названию '{name}'");
+        }
+
+        public void SearchByCategory(ProductCategory category)
+        {
+            var found = products.Where(p => p.Category == category).ToList();
+            DisplaySearchResults(found, $"в категории '{category}'");
+        }
+
+        public void DisplayAllProducts()
+        {
+            DisplaySearchResults(products, "всего");
+        }
+
+        private void DisplaySearchResults(List<Product> foundProducts, string searchType)
+        {
+            if (foundProducts.Any())
+            {
+                Console.WriteLine($"\nНайдено товаров {searchType}: {foundProducts.Count}");
+                foundProducts.ForEach(p => p.PrintInfo());
+            }
+            else
+            {
+                Console.WriteLine("Товары не найдены");
+            }
+        }
     }
 
     
