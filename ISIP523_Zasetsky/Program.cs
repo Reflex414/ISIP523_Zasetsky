@@ -139,5 +139,135 @@ namespace StoreManagement
             }
         }
     }
+    class Program
+    {
+        static ProductManager manager = new ProductManager();
 
-    
+        static void Main(string[] args)
+        {
+            InitializeTestData();
+
+            while (true)
+            {
+                DisplayMenu();
+                var choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1": AddProductMenu(); break;
+                    case "2": RemoveProductMenu(); break;
+                    case "3": OrderSupplyMenu(); break;
+                    case "4": SellProductMenu(); break;
+                    case "5": SearchMenu(); break;
+                    case "6": manager.DisplayAllProducts(); break;
+                    case "7": return;
+                    default: Console.WriteLine("Неверный выбор!"); break;
+                }
+
+                Console.WriteLine("\nНажмите любую клавишу...");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+
+        static void InitializeTestData()
+        {
+            manager.AddProduct("Смартфон Samsung", 25000, 10, ProductCategory.Electronics);
+            manager.AddProduct("Футболка хлопковая", 1500, 25, ProductCategory.Clothing);
+            manager.AddProduct("Война и мир", 800, 15, ProductCategory.Books);
+            manager.AddProduct("Шоколад Alpen Gold", 120, 50, ProductCategory.Food);
+            manager.AddProduct("Футбольный мяч", 3000, 8, ProductCategory.Sports);
+            Console.WriteLine("Тестовые данные загружены!\n");
+        }
+
+        static void DisplayMenu()
+        {
+            Console.WriteLine("=== СИСТЕМА УЧЁТА ТОВАРОВ ===");
+            Console.WriteLine("1. Добавить товар");
+            Console.WriteLine("2. Удалить товар");
+            Console.WriteLine("3. Заказать поставку");
+            Console.WriteLine("4. Продать товар");
+            Console.WriteLine("5. Поиск товаров");
+            Console.WriteLine("6. Показать все товары");
+            Console.WriteLine("7. Выход");
+            Console.Write("Выберите действие: ");
+        }
+
+        static void AddProductMenu()
+        {
+            Console.Write("Название: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Цена: ");
+            if (!decimal.TryParse(Console.ReadLine(), out decimal price))
+            { Console.WriteLine("Ошибка цены!"); return; }
+
+            Console.Write("Количество: ");
+            if (!int.TryParse(Console.ReadLine(), out int quantity))
+            { Console.WriteLine("Ошибка количества!"); return; }
+
+            Console.WriteLine("Категории: 1-Электроника, 2-Одежда, 3-Книги, 4-Еда, 5-Спорт");
+            if (!int.TryParse(Console.ReadLine(), out int cat) || cat < 1 || cat > 5)
+            { Console.WriteLine("Ошибка категории!"); return; }
+
+            manager.AddProduct(name, price, quantity, (ProductCategory)(cat - 1));
+        }
+
+        static void RemoveProductMenu()
+        {
+            Console.Write("Код товара: ");
+            manager.RemoveProduct(Console.ReadLine());
+        }
+
+        static void OrderSupplyMenu()
+        {
+            Console.Write("Код товара: ");
+            string code = Console.ReadLine();
+            Console.Write("Количество: ");
+            if (int.TryParse(Console.ReadLine(), out int quantity))
+                manager.OrderSupply(code, quantity);
+            else
+                Console.WriteLine("Ошибка количества!");
+        }
+
+        static void SellProductMenu()
+        {
+            Console.Write("Код товара: ");
+            string code = Console.ReadLine();
+            Console.Write("Количество: ");
+            if (int.TryParse(Console.ReadLine(), out int quantity))
+                manager.SellProduct(code, quantity);
+            else
+                Console.WriteLine("Ошибка количества!");
+        }
+
+        static void SearchMenu()
+        {
+            Console.WriteLine("Поиск по: 1-Коду, 2-Названию, 3-Категории");
+            var type = Console.ReadLine();
+
+            switch (type)
+            {
+                case "1":
+                    Console.Write("Код: ");
+                    manager.SearchByCode(Console.ReadLine());
+                    break;
+                case "2":
+                    Console.Write("Название: ");
+                    manager.SearchByName(Console.ReadLine());
+                    break;
+                case "3":
+                    Console.WriteLine("Категории: 1-Электроника, 2-Одежда, 3-Книги, 4-Еда, 5-Спорт");
+                    if (int.TryParse(Console.ReadLine(), out int cat) && cat >= 1 && cat <= 5)
+                        manager.SearchByCategory((ProductCategory)(cat - 1));
+                    else
+                        Console.WriteLine("Ошибка категории!");
+                    break;
+                default:
+                    Console.WriteLine("Неверный выбор!");
+                    break;
+            }
+        }
+    }
+}
+
