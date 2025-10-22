@@ -181,5 +181,64 @@ class Program
             Console.WriteLine(course.GetInfo());
         }
     }
+    static void EnrollStudentInCourse()
+    {
+        Console.WriteLine("\n=== ЗАПИСЬ СТУДЕНТА НА КУРС ===");
+        ShowAllStudents();
+        ShowAllCourses();
 
+        Console.Write("Введите ID студента: ");
+        int studentId = int.Parse(Console.ReadLine());
+        Console.Write("Введите ID курса: ");
+        int courseId = int.Parse(Console.ReadLine());
+
+        Student student = FindStudentById(studentId);
+        Course course = FindCourseById(courseId);
+
+        if (student == null)
+        {
+            Console.WriteLine("Студент не найден!");
+            return;
+        }
+
+        if (course == null)
+        {
+            Console.WriteLine("Курс не найден!");
+            return;
+        }
+
+        student.EnrollInCourse(course);
+        Console.WriteLine($"Студент {student.FIO} записан на курс {course.CourseName}");
+    }
+
+    static void AssignTeacherToCourse()
+    {
+        Console.WriteLine("\n=== НАЗНАЧЕНИЕ ПРЕПОДАВАТЕЛЯ НА КУРС ===");
+        ShowAllTeachers();
+        ShowAllCourses();
+
+        Console.Write("Введите ID преподавателя: ");
+        int teacherId = int.Parse(Console.ReadLine());
+        Console.Write("Введите ID курса: ");
+        int courseId = int.Parse(Console.ReadLine());
+
+        Teacher teacher = FindTeacherById(teacherId);
+        Course course = FindCourseById(courseId);
+
+        if (teacher == null)
+        {
+            Console.WriteLine("Преподаватель не найден!");
+            return;
+        }
+
+        if (course == null)
+        {
+            Console.WriteLine("Курс не найден!");
+            return;
+        }
+
+        course.AssignTeacher(teacher);
+        Console.WriteLine($"Преподаватель {teacher.FIO} назначен на курс {course.CourseName}");
+    }
+    
 }
