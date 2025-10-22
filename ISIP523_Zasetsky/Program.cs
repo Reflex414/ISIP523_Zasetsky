@@ -293,4 +293,72 @@ class Program
             Console.WriteLine("Преподаватель не найден!");
         }
     }
+    static Student FindStudentById(int id)
+    {
+        foreach (var student in students)
+        {
+            if (student.StudentID == id)
+            {
+                return student;
+            }
+        }
+        return null;
+    }
+
+    static Teacher FindTeacherById(int id)
+    {
+        foreach (var teacher in teachers)
+        {
+            if (teacher.TeacherID == id)
+            {
+                return teacher;
+            }
+        }
+        return null;
+    }
+
+    static Course FindCourseById(int id)
+    {
+        foreach (var course in courses)
+        {
+            if (course.CourseID == id)
+            {
+                return course;
+            }
+        }
+        return null;
+    }
+
+    static void AddTestData()
+    {
+
+        students.Add(new Student("Иванов Иван Иванович", 20, new DateOnly(2003, 5, 15), "М", 1));
+        students.Add(new Student("Петрова Мария Сергеевна", 21, new DateOnly(2002, 8, 22), "Ж", 2));
+        students.Add(new Student("Сидоров Алексей Владимирович", 19, new DateOnly(2004, 3, 10), "М", 3));
+
+        teachers.Add(new Teacher("Смирнов Андрей Петрович", 45, new DateOnly(1978, 1, 15), "М", 1, 20));
+        teachers.Add(new Teacher("Козлова Елена Викторовна", 38, new DateOnly(1985, 7, 30), "Ж", 2, 15));
+
+
+        courses.Add(new Course(1, "Программирование на C#", 2024));
+        courses.Add(new Course(2, "Базы данных", 2024));
+        courses.Add(new Course(3, "Веб-разработка", 2024));
+
+
+        courses[0].AssignTeacher(teachers[0]);
+        courses[1].AssignTeacher(teachers[1]);
+        courses[2].AssignTeacher(teachers[0]);
+
+
+        students[0].EnrollInCourse(courses[0]);
+        students[0].EnrollInCourse(courses[1]);
+        students[1].EnrollInCourse(courses[0]);
+        students[2].EnrollInCourse(courses[2]);
+
+        nextStudentId = 4;
+        nextTeacherId = 3;
+        nextCourseId = 4;
+    }
+}
+
 }
