@@ -228,3 +228,135 @@ namespace ISIP523_Zasetsky
             }
             return null;
         }
+
+        static void DeclineOrder(TempClient client)
+        {
+            using (var context = Core.CreateContext())
+            {
+                var garage = context.Garages.First(g => g.ID == 1);
+                var penalty = 100.00m;
+
+                garage.Balance -= penalty;
+                GameCore.CarsProcessed++;
+
+                var order = new OrderHistory
+                {
+                    CarModel = client.CarModel,
+                    DetailID = client.BrokenPartID,
+                    RepairCost = 0,
+                    Profit = -penalty,
+                    OrderDate = DateTime.Now,
+                    Status = "Declined"
+                };
+                GameCore.OrderHistory.Add(order);
+                context.SaveChanges();
+
+                Console.WriteLine($"Заказ отклонен. Штраф: {penalty} руб.");
+            }
+        }
+
+        static void ShowPurchaseMenu()
+        {
+            Console.Clear();
+            Console.WriteLine("=== ПОКУПКА ЗАПЧАСТЕЙ ===");
+
+            using (var context = Core.CreateContext())
+            {
+                var details = context.Details.ToList();
+                var garage = context.Garages.First(g => g.ID == 1);
+
+                for (int i = 0; i < details.Count; i++)
+                {
+                    var detail = details[i];
+                    var detailInGarage = context.DetailsGarages
+                        .FirstOrDefault(dg => dg.DetailsID == detail.ID && dg.GarageID == 1);
+                    var detailCount = detailInGarage?.Count ?? 0;
+
+                    Console.WriteLine($"{i + 1}. {detail.NameDetail} - {detail.Price} руб. (на складе: {detailCount})");
+                }
+
+                Console.Write("\nВыберите номер запчасти: ");
+                if (int.TryParse(Console.ReadLine(), out int detailIndex) && detailIndex >= 1 && detailIndex <= details.Count)
+                {
+                    var selectedDetail = details[detailIndex - 1];
+
+                    Console.Write("Введите количество: ");
+                    if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
+                    {
+                        var totalCost = selectedDetail.Price * quantity;
+
+                        if (garage.Balance >= totalCost)
+                        {
+                            garage.Balance -= totalCost;
+
+                            var delivery = new PendingDelivery
+                            {
+                                DetailID = selectedDetail.ID,
+                                DetailName = selectedDetail.NameDetail,
+                                Quantity = quantity,
+                                TotalCost = totalCost,
+                                OrderPlacedAtCar = GameCore.CarsProcessed
+                            };
+
+                            GameCore.PendingDeliveries.Add(delivery);
+                            context.SaveChanges();
+
+                            Console.WriteLine($"Заказ оформлен! Поставка через 2 машины. Списано: {totalCost} руб.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Недостаточно средств!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Неверное количество!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Неверный выбор!");
+                }
+            }
+        }
+
+        static void ShowWarehouseStatus()
+        {
+            Console.Clear();
+            Console.WriteLine("=== СКЛАД ГАРАЖА ===");
+
+            using (var context = Core.CreateContext())
+            {
+                var detailsInGarage = context.DetailsGarages
+                    .Where(dg => dg.GarageID == 1)
+                    .Join(context.Details,
+                          dg => dg.DetailsID,
+                          d => d.ID,
+                          (dg, d) => new { Detail = d, Count = dg.Count })
+                    .ToList();
+
+                foreach (var item in detailsInGarage)
+                {
+                    Console.WriteLine($"{item.Detail.NameDetail}: {item.Count} шт. (цена: {item.Detail.Price} руб.)");
+                }
+
+                if (GameCore.PendingDeliveries.Any())
+                {
+                    Console.WriteLine("\n=== ОЖИДАЮЩИЕ ПОСТАВКИ ===");
+                    foreach (var delivery in GameCore.PendingDeliveries)
+                    {
+                        Console.WriteLine($"{delivery.DetailName}: {delivery.Quantity} шт. (поставка через {delivery.OrderPlacedAtCar + 2 - GameCore.CarsProcessed} машин)");
+                    }
+                }
+
+                var lowStock = detailsInGarage.Where(d => d.Count < 3).ToList();
+                if (lowStock.Any())
+                {
+                    Console.WriteLine("\n!!! НИЗКИЙ ЗАПАС !!!");
+                    foreach (var item in lowStock)
+                    {
+                        Console.WriteLine($"{item.Detail.NameDetail}: осталось {item.Count} шт.");
+                    }
+                }
+            }
+        }
