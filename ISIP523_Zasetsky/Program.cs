@@ -129,3 +129,102 @@ namespace ISIP523_Zasetsky
                 };
             }
         }
+        static void DisplayClientRequest(TempClient client)
+        {
+            using (var context = Core.CreateContext())
+            {
+                var detailInGarage = context.DetailsGarages
+                    .FirstOrDefault(dg => dg.DetailsID == client.BrokenPartID && dg.GarageID == 1);
+                var detailCount = detailInGarage?.Count ?? 0;
+
+                Console.WriteLine($"\nПриехал клиент на {client.CarModel}");
+                Console.WriteLine($"Поломка: {client.BrokenPartName}");
+                Console.WriteLine($"Стоимость ремонта: {client.RepairCost} руб.");
+                Console.WriteLine($"На складе: {detailCount} шт.");
+            }
+        }
+
+        static void AcceptOrder(TempClient client)
+        {
+            using (var context = Core.CreateContext())
+            {
+                var garage = context.Garages.First(g => g.ID == 1);
+                var detailInGarage = context.DetailsGarages
+                    .FirstOrDefault(dg => dg.DetailsID == client.BrokenPartID && dg.GarageID == 1);
+
+                GameCore.CarsProcessed++;
+
+                if (detailInGarage != null && detailInGarage.Count > 0)
+                {
+                    detailInGarage.Count--;
+
+                    garage.Balance += client.RepairCost;
+
+                    var order = new OrderHistory
+                    {
+                        CarModel = client.CarModel,
+                        DetailID = client.BrokenPartID,
+                        RepairCost = client.RepairCost,
+                        Profit = client.RepairCost - context.Details.First(d => d.ID == client.BrokenPartID).Price,
+                        OrderDate = DateTime.Now,
+                        Status = "Completed"
+                    };
+                    GameCore.OrderHistory.Add(order);
+
+                    context.SaveChanges();
+                    Console.WriteLine($"Ремонт выполнен успешно! Получено: {client.RepairCost} руб.");
+                }
+                else
+                {
+                    Console.WriteLine("Нужной детали нет на складе! Производим замену случайной деталью...");
+
+                    var randomDetail = GetRandomAvailableDetail(context);
+                    if (randomDetail != null)
+                    {
+                        var randomDetailInGarage = context.DetailsGarages
+                            .First(dg => dg.DetailsID == randomDetail.ID && dg.GarageID == 1);
+                        randomDetailInGarage.Count--;
+
+                        var penalty = 300.00m;
+                        garage.Balance -= penalty;
+
+                        var order = new OrderHistory
+                        {
+                            CarModel = client.CarModel,
+                            DetailID = client.BrokenPartID,
+                            RepairCost = 0,
+                            Profit = -penalty,
+                            OrderDate = DateTime.Now,
+                            Status = "Failed"
+                        };
+                        GameCore.OrderHistory.Add(order);
+
+                        context.SaveChanges();
+                        Console.WriteLine($"Клиент недоволен! Штраф: {penalty} руб.");
+                        Console.WriteLine($"Использована случайная деталь: {randomDetail.NameDetail}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("На складе нет вообще никаких деталей! Штраф удвоен.");
+                        garage.Balance -= 600.00m;
+                        context.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        static Detail GetRandomAvailableDetail(БдДляПр7Context context)
+        {
+            var availableDetails = context.DetailsGarages
+                .Where(dg => dg.GarageID == 1 && dg.Count > 0)
+                .Select(dg => dg.DetailsID)
+                .ToList();
+
+            if (availableDetails.Any())
+            {
+                var random = new Random();
+                var randomDetailId = availableDetails[random.Next(availableDetails.Count)];
+                return context.Details.First(d => d.ID == randomDetailId);
+            }
+            return null;
+        }
