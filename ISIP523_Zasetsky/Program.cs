@@ -469,3 +469,37 @@ namespace ISIP523_Zasetsky
             }
         }
     }
+    public class TempClient
+    {
+        public string CarModel { get; set; }
+        public int BrokenPartID { get; set; }
+        public string BrokenPartName { get; set; }
+        public decimal RepairCost { get; set; }
+    }
+
+    public class PendingDelivery
+    {
+        public int DetailID { get; set; }
+        public string DetailName { get; set; }
+        public int Quantity { get; set; }
+        public decimal TotalCost { get; set; }
+        public int OrderPlacedAtCar { get; set; }
+    }
+
+    public class OrderHistory
+    {
+        public string CarModel { get; set; }
+        public int DetailID { get; set; }
+        public decimal RepairCost { get; set; }
+        public decimal Profit { get; set; }
+        public DateTime OrderDate { get; set; }
+        public string Status { get; set; } //Completed, Failed, Declined
+    }
+
+    public static class GameCore
+    {
+        public static int CarsProcessed { get; set; } = 0;
+        public static List<PendingDelivery> PendingDeliveries { get; set; } = new List<PendingDelivery>();
+        public static List<OrderHistory> OrderHistory { get; set; } = new List<OrderHistory>();
+    }
+}
