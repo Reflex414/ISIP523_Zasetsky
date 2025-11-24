@@ -360,3 +360,112 @@ namespace ISIP523_Zasetsky
                 }
             }
         }
+        static void ShowStatistics()
+        {
+            Console.Clear();
+            Console.WriteLine("=== СТАТИСТИКА ===");
+
+            using (var context = Core.CreateContext())
+            {
+                var garage = context.Garages.First(g => g.ID == 1);
+                var totalOrders = GameCore.OrderHistory.Count;
+                var completedOrders = GameCore.OrderHistory.Count(o => o.Status == "Completed");
+                var failedOrders = GameCore.OrderHistory.Count(o => o.Status == "Failed");
+                var declinedOrders = GameCore.OrderHistory.Count(o => o.Status == "Declined");
+
+                var totalProfit = GameCore.OrderHistory.Sum(o => o.Profit);
+                var totalRevenue = GameCore.OrderHistory.Sum(o => o.RepairCost);
+
+                Console.WriteLine($"Всего заказов: {totalOrders}");
+                Console.WriteLine($"Успешных ремонтов: {completedOrders}");
+                Console.WriteLine($"Неудачных ремонтов: {failedOrders}");
+                Console.WriteLine($"Отклоненных заказов: {declinedOrders}");
+                Console.WriteLine($"Общий доход: {totalRevenue} руб.");
+                Console.WriteLine($"Общая прибыль: {totalProfit} руб.");
+                Console.WriteLine($"Текущий баланс: {garage.Balance} руб.");
+
+                if (GameCore.OrderHistory.Any())
+                {
+                    var popularDetails = GameCore.OrderHistory
+                        .Where(o => o.Status == "Completed")
+                        .GroupBy(o => o.DetailID)
+                        .Select(g => new { DetailID = g.Key, Count = g.Count() })
+                        .OrderByDescending(x => x.Count)
+                        .Take(3)
+                        .ToList();
+
+                    Console.WriteLine("\nСамые частые поломки:");
+                    foreach (var item in popularDetails)
+                    {
+                        var detail = context.Details.First(d => d.ID == item.DetailID);
+                        Console.WriteLine($"  {detail.NameDetail}: {item.Count} раз");
+                    }
+                }
+            }
+        }
+
+        static void ProcessDeliveries()
+        {
+            var deliveriesToProcess = GameCore.PendingDeliveries
+                .Where(d => GameCore.CarsProcessed >= d.OrderPlacedAtCar + 2)
+                .ToList();
+
+            if (deliveriesToProcess.Any())
+            {
+                using (var context = Core.CreateContext())
+                {
+                    var garage = context.Garages.First(g => g.ID == 1);
+
+                    foreach (var delivery in deliveriesToProcess)
+                    {
+                        var detailInGarage = context.DetailsGarages
+                            .FirstOrDefault(dg => dg.DetailsID == delivery.DetailID && dg.GarageID == 1);
+
+                        if (detailInGarage != null)
+                        {
+                            detailInGarage.Count += delivery.Quantity;
+                        }
+                        else
+                        {
+                            detailInGarage = new DetailsGarage
+                            {
+                                GarageID = garage.ID,
+                                DetailsID = delivery.DetailID,
+                                Count = delivery.Quantity
+                            };
+                            context.DetailsGarages.Add(detailInGarage);
+                        }
+
+                        Console.WriteLine($"Поставка получена: {delivery.DetailName} - {delivery.Quantity} шт.");
+                        GameCore.PendingDeliveries.Remove(delivery);
+                    }
+
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        static void CheckGameOver()
+        {
+            using (var context = Core.CreateContext())
+            {
+                var garage = context.Garages.First(g => g.ID == 1);
+
+                if (garage.Balance <= 0)
+                {
+                    Console.WriteLine("\nИГРА ОКОНЧЕНА! Вы банкрот!!!");
+                    Console.WriteLine($"Итоговый счет: Успешных ремонтов - {GameCore.OrderHistory.Count(o => o.Status == "Completed")}");
+                    Console.WriteLine($"Всего обработано машин: {GameCore.CarsProcessed}");
+                    Environment.Exit(0);
+                }
+
+                if (garage.Balance >= 1000000.00m)
+                {
+                    Console.WriteLine("\nПОБЕДА! Вы заработали 1000000 рублей!");
+                    Console.WriteLine($"Итоговый счет: Успешных ремонтов - {GameCore.OrderHistory.Count(o => o.Status == "Completed")}");
+                    Console.WriteLine($"Всего обработано машин: {GameCore.CarsProcessed}");
+                    Environment.Exit(0);
+                }
+            }
+        }
+    }
