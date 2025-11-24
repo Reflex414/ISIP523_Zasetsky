@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 namespace ISIP523_Zasetsky
 {
@@ -75,5 +76,56 @@ namespace ISIP523_Zasetsky
                 Console.WriteLine($"Ожидающих поставок: {GameCore.PendingDeliveries.Count}");
                 Console.WriteLine($"Обработано машин: {GameCore.CarsProcessed}");
                 Console.WriteLine("===================");
+            }
+        }
+
+        static void DisplayActionMenu()
+        {
+            Console.WriteLine("\nВыберите действие:");
+            Console.WriteLine("1 - Принять заказ");
+            Console.WriteLine("2 - Отказаться от заказа");
+            Console.WriteLine("3 - Купить запчасти");
+            Console.WriteLine("4 - Показать склад");
+            Console.WriteLine("5 - Статистика");
+            Console.WriteLine("6 - Выйти из игры");
+        }
+
+        static int GetUserChoice()
+        {
+            Console.Write("Ваш выбор: ");
+            return int.TryParse(Console.ReadLine(), out int choice) ? choice : 0;
+        }
+
+        static TempClient GenerateRandomClient()
+        {
+            var random = new Random();
+
+            using (var context = Core.CreateContext())
+            {
+                var details = context.Details.ToList();
+                var carModels = new List<string>
+                {
+                    "Toyota Camry 2020",
+                    "Honda Civic 2019",
+                    "BMW X5 2021",
+                    "Mercedes C-class 2022",
+                    "Audi A4 2021",
+                    "Ford Focus 2018",
+                    "Volkswagen Golf 2019",
+                    "Hyundai Solaris 2020"
+                };
+
+                var randomDetail = details[random.Next(details.Count)];
+                var randomCar = carModels[random.Next(carModels.Count)];
+
+                var repairCost = randomDetail.Price * 1.8m;
+
+                return new TempClient
+                {
+                    CarModel = randomCar,
+                    BrokenPartID = randomDetail.ID,
+                    BrokenPartName = randomDetail.NameDetail,
+                    RepairCost = repairCost
+                };
             }
         }
